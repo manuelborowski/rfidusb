@@ -5,6 +5,14 @@ from tkinter import ttk, messagebox
 from config import BR_KEY, BR_URL
 import serial.tools.list_ports as port_list
 
+#linux beep:
+# sudo apt install beep
+# sudo usermod -aG input badgereader
+#linux ch340 serial:
+# sudo apt autoremove brltty
+# sudo usermod -aG dialout badgereader
+
+
 os_linux = "linux" in sys.platform
 
 if not os_linux:
@@ -14,9 +22,10 @@ if not os_linux:
 # 0.2: for windows or linux
 # 0.3: bugfix
 # 0.4: fast development
+# 0.5: bugfix for linux
 
 
-version = "V0.4 @ MB"
+version = "V0.5 @ MB"
 
 class Config():
     def __init__(self):

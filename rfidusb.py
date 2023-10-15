@@ -1,5 +1,5 @@
 import sys, os, json, serial, re, requests, time, binascii, datetime
-# import tkinter as tk
+from pathlib import Path
 import tkinter as tk
 from tkinter import ttk, messagebox
 from config import BR_KEY, BR_URL
@@ -13,20 +13,22 @@ if not os_linux:
 # V0.1: initial version
 # 0.2: for windows or linux
 # 0.3: bugfix
+# 0.4: fast development
 
 
-version = "V0.2 @ MB"
+version = "V0.4 @ MB"
 
 class Config():
     def __init__(self):
         if os_linux:
-            config_dir = "config"
+            config_dir = Path(".")
         else:
-            lap_dir = os.getenv("LOCALAPPDATA")
-            config_dir = lap_dir + "\\rfidusb"
-        if not os.path.exists(config_dir):
-            os.mkdir(config_dir)
-            self.config_path = config_dir + "\\config.json"
+            lap_dir = Path(os.getenv("LOCALAPPDATA"))
+            config_dir = lap_dir / "rfidusb"
+            if not os.path.exists(config_dir):
+                os.mkdir(config_dir)
+        self.config_path = config_dir / "config.json"
+        if not self.config_path.exists():
             with open(self.config_path, "w") as config_file:
                 config_file.write(json.dumps({"location": ""}))
         with open(self.config_path, "r") as config_file:

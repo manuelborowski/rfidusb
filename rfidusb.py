@@ -12,6 +12,8 @@ if not os_linux:
 
 # V0.1: initial version
 # 0.2: for windows or linux
+# 0.3: bugfix
+
 
 version = "V0.2 @ MB"
 
@@ -106,7 +108,7 @@ class BadgeServer():
     def start(self):
         com_port = None
         if os_linux:
-            com_port = self.port_name
+            com_port = "/dev/" + self.port_name
         else:
             port_match = re.search(r"\((.*)\)", self.port_name)
             if port_match:

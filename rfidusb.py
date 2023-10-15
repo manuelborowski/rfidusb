@@ -1,23 +1,32 @@
-import sys, os, json, serial, re, requests, time, binascii, datetime, winsound
+import sys, os, json, serial, re, requests, time, binascii, datetime
 # import tkinter as tk
 import tkinter as tk
 from tkinter import ttk, messagebox
 from config import BR_KEY, BR_URL
 import serial.tools.list_ports as port_list
 
-# V0.1: initial version
+os_linux = "linux" in sys.platform
 
-version = "V0.01 @ MB"
+if not os_linux:
+    import winsound
+
+# V0.1: initial version
+# 0.2: for windows or linux
+
+version = "V0.2 @ MB"
 
 class Config():
     def __init__(self):
-        lap_dir = os.getenv("LOCALAPPDATA")
-        config_dir = lap_dir + "\\rfidusb"
-        self.config_path = config_dir + "\\config.json"
+        if os_linux:
+            config_dir = "config"
+        else:
+            lap_dir = os.getenv("LOCALAPPDATA")
+            config_dir = lap_dir + "\\rfidusb"
         if not os.path.exists(config_dir):
             os.mkdir(config_dir)
+            self.config_path = config_dir + "\\config.json"
             with open(self.config_path, "w") as config_file:
-                config_file.write(json.dumps({"comport": "", "location": ""}))
+                config_file.write(json.dumps({"location": ""}))
         with open(self.config_path, "r") as config_file:
             self.config = json.loads(config_file.read())
 
@@ -57,10 +66,16 @@ class Rfid7941W():
                         res = ret.json()
                         if res["status"]:
                             self.gui.log_add_line(f"OK, {code} at {timestamp}")
-                            winsound.Beep(1500, 200)
+                            if os_linux:
+                                os.system("beep -f 1500 -l 200")
+                            else:
+                                winsound.Beep(1500, 200)
                         else:
                             self.gui.log_add_line(f"FOUT, {code} at {timestamp}")
-                            winsound.Beep(1500, 1000)
+                            if os_linux:
+                                os.system("beep -f 1500 -l 800")
+                            else:
+                                winsound.Beep(1500, 800)
                     self.ctr = 0
                 self.prev_code = code
                 self.ctr += 1
@@ -68,7 +83,6 @@ class Rfid7941W():
 
 
 class BadgeServer():
-
     com_ports = []
     running = True
     rfid_active = False
@@ -79,7 +93,10 @@ class BadgeServer():
         self.rfid = rfid
 
     def init(self):
-        self.com_ports = [p.description for p in list(port_list.comports())]
+        if os_linux:
+            self.com_ports = [p.name for p in port_list.comports() if "usb" in p.name.lower()]
+        else:
+            self.com_ports = [p.description for p in list(port_list.comports()) if "ch340" in p.description.lower()]
         self.gui.init(self)
         while self.running:
             self.gui.kick()
@@ -87,9 +104,14 @@ class BadgeServer():
                 self.rfid.kick()
 
     def start(self):
-        port_match = re.search(r"\((.*)\)", self.port_name)
-        if port_match:
-            com_port = port_match[1]
+        com_port = None
+        if os_linux:
+            com_port = self.port_name
+        else:
+            port_match = re.search(r"\((.*)\)", self.port_name)
+            if port_match:
+                com_port = port_match[1]
+        if com_port:
             self.port = serial.Serial(com_port, baudrate=115200, bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE, timeout=0.1)
             location = self.locations[self.location_tag]
             self.rfid.init(location, self.port, self.config, self.gui)
@@ -107,11 +129,7 @@ class BadgeServer():
 
     def get_default_com_port(self):
         self.port_name = ""
-        for port in self.com_ports:
-            if "CH340" in port:
-                default_port = port
-                break
-        if self.port_name == "" and self.com_ports:
+        if self.com_ports:
             self.port_name = self.com_ports[0]
         return self.port_name
 

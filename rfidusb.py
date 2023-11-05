@@ -23,9 +23,10 @@ if not os_linux:
 # 0.3: bugfix
 # 0.4: fast development
 # 0.5: bugfix for linux
+# 0.6: add rfidusb.sh
 
 
-version = "V0.5 @ MB"
+version = "V0.6 @ MB"
 
 class Config():
     def __init__(self):

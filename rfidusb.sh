@@ -1,0 +1,1 @@
+cd /home/badgereader/projects/rfidusb && python3 rfidusb.py

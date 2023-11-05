@@ -24,9 +24,10 @@ if not os_linux:
 # 0.4: fast development
 # 0.5: bugfix for linux
 # 0.6: add rfidusb.sh
+# 0.7: add rfid.png
 
 
-version = "V0.6 @ MB"
+version = "V0.7 @ MB"
 
 class Config():
     def __init__(self):
